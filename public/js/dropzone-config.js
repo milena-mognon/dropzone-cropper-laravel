@@ -1,29 +1,56 @@
-var total_photos_counter = 0;
+$('#addImagem').on('click', function () {
+    $("#imagem-modal").modal();
+});
+
 Dropzone.options.myDropzone = {
-    uploadMultiple: true,
-    parallelUploads: 2,
     maxFilesize: 16,
+    acceptedFiles: "image/*",
     previewTemplate: document.querySelector('#preview').innerHTML,
     addRemoveLinks: true,
-    dictRemoveFile: 'Remove file',
+    dictRemoveFile: "Remover Imagem",
     dictFileTooBig: 'Image is larger than 16MB',
+    uploadMultiple: false,
     timeout: 10000,
+    autoProcessQueue: false,
 
     init: function () {
+
+        this.on("thumbnail", function (file) {
+            $('#crop-modal').modal();
+            var image_holder = $('#image-holder');
+            image_holder.empty();
+            $('<img />', {
+                'src': file.dataURL,
+                'id': 'image',
+                'style': 'max-width: 750px',
+            }).appendTo(image_holder);
+            $("#image").cropper({
+                minContainerWidth: 750,
+                minContainerHeight: 400,
+                zoomable: false
+            });
+            image_holder.show();
+            $('.dz-progress').hide();
+        });
+
         this.on("removedfile", function (file) {
-            $.post({
+
+            imageId = file.previewTemplate['childNodes']['3']['id'];
+
+            $.ajax({
                 url: '/images-delete',
-                data: {id: file.name, _token: $('[name="_token"]').val()},
+                data: {id: imageId},
+                method: 'POST',
                 dataType: 'json',
                 success: function (data) {
-                    total_photos_counter--;
-                    $("#counter").text("# " + total_photos_counter);
+                    alert('Imagem removida com sucesso!');
                 }
             });
         });
     },
-    success: function (file, done) {
-        total_photos_counter++;
-        $("#counter").text("# " + total_photos_counter);
-    }
+
+    error: function (file, message) {
+        console.log(message);
+        $(file.previewElement).addClass("dz-error").find('.dz-error-message').text(message.Message);
+    },
 };

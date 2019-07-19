@@ -11,17 +11,13 @@
             <tr>
                 <th scope="col">Image</th>
                 <th scope="col">Filename</th>
-                <th scope="col">Original Filename</th>
-                <th scope="col">Resized Filename</th>
             </tr>
             </thead>
             <tbody>
             @foreach($photos as $photo)
                 <tr>
-                    <td><img src="/images/{{ $photo->resized_name }}"></td>
+                    <td><img src="/upload/{{ $photo->filename }}" style="width: 250px; height: 100px;"></td>
                     <td>{{ $photo->filename }}</td>
-                    <td>{{ $photo->original_name }}</td>
-                    <td>{{ $photo->resized_name }}</td>
                 </tr>
             @endforeach
             </tbody>

@@ -5,16 +5,15 @@ namespace App\Http\Controllers;
 use App\Upload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-use Intervention\Image\Facades\Image;
 
 class UploadImagesController extends Controller
 {
 
-    private $photos_path;
+    private $images_path;
 
     public function __construct()
     {
-        $this->photos_path = public_path('/images');
+        $this->images_path = public_path('/uploads/');
     }
 
     /**
@@ -24,8 +23,8 @@ class UploadImagesController extends Controller
      */
     public function index()
     {
-        $photos = Upload::all();
-        return view('uploaded-images', compact('photos'));
+        $images = Upload::all();
+        return view('uploaded-images', compact('images'));
     }
 
     /**
@@ -39,46 +38,28 @@ class UploadImagesController extends Controller
     }
 
     /**
-     * Saving images uploaded through XHR Request.
+     * Saving images cropped.
      *
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $photos = $request->file('file');
+        $imagem = $_FILES['croppedImage']['tmp_name'];
 
-        if (!is_array($photos)) {
-            $photos = [$photos];
-        }
+        $image_name = md5(time() + random_int(1, 10)) . '.png';
 
-        if (!is_dir($this->photos_path)) {
-            mkdir($this->photos_path, 0777);
-        }
+        if (!is_dir($this->images_path)) { // verifica se existe a pasta upload
+            mkdir($this->images_path, 0777, true); // cria a pasta caso não exista
+        };
 
-        for ($i = 0; $i < count($photos); $i++) {
-            $photo = $photos[$i];
-            $name = sha1(date('YmdHis') . str_random(30));
-            $save_name = $name . '.' . $photo->getClientOriginalExtension();
-            $resize_name = $name . str_random(2) . '.' . $photo->getClientOriginalExtension();
+        $image = Upload::create(['filename' => $image_name]);
 
-            Image::make($photo)
-                ->resize(250, null, function ($constraints) {
-                    $constraints->aspectRatio();
-                })
-                ->save($this->photos_path . '/' . $resize_name);
+        $path = $this->images_path . $image_name;
 
-            $photo->move($this->photos_path, $save_name);
+        move_uploaded_file($imagem, $path);
 
-            $upload = new Upload();
-            $upload->filename = $save_name;
-            $upload->resized_name = $resize_name;
-            $upload->original_name = basename($photo->getClientOriginalName());
-            $upload->save();
-        }
-        return Response::json([
-            'message' => 'Image saved Successfully'
-        ], 200);
+        return response()->json(['success' => 'done', 'image' => $image, 'teste' => $imagem]);
     }
 
     /**
@@ -88,22 +69,16 @@ class UploadImagesController extends Controller
      */
     public function destroy(Request $request)
     {
-        $filename = $request->id;
-        $uploaded_image = Upload::where('original_name', basename($filename))->first();
+        $uploaded_image = Upload::find($request->input('id'));
 
         if (empty($uploaded_image)) {
             return Response::json(['message' => 'Sorry file does not exist'], 400);
         }
 
-        $file_path = $this->photos_path . '/' . $uploaded_image->filename;
-        $resized_file = $this->photos_path . '/' . $uploaded_image->resized_name;
+        $image_path = $this->images_path . $uploaded_image->filename;
 
-        if (file_exists($file_path)) {
-            unlink($file_path);
-        }
-
-        if (file_exists($resized_file)) {
-            unlink($resized_file);
+        if (file_exists($image_path)) {
+            unlink($image_path);
         }
 
         if (!empty($uploaded_image)) {
