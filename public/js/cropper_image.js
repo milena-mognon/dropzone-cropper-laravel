@@ -25,7 +25,7 @@ $("#uploadCroppedImage").on('click', function () {
                 $('#image-id').prop('id', id);
                 $('#filenamechange').remove();
                 filename = "<div class=dz-filename><span data-dz-name>" + filename + " </span></div>";
-                $('#'+id).append(filename);
+                $('#' + id).append(filename);
             },
             error() {
                 alert('Erro ao salvar!');

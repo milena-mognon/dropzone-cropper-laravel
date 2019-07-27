@@ -9,12 +9,13 @@ Dropzone.options.myDropzone = {
     addRemoveLinks: true,
     dictRemoveFile: "Remover Imagem",
     dictFileTooBig: 'Image is larger than 16MB',
-    uploadMultiple: false,
     timeout: 10000,
     autoProcessQueue: false,
+    parallelUploads: 1,
 
     init: function () {
-
+        var _this = this;
+        _this.hiddenFileInput.removeAttribute('multiple');
         this.on("thumbnail", function (file) {
             $('#crop-modal').modal();
             var image_holder = $('#image-holder');
@@ -31,26 +32,33 @@ Dropzone.options.myDropzone = {
             });
             image_holder.show();
             $('.dz-progress').hide();
+            _this.hiddenFileInput.removeAttribute('multiple');
         });
 
         this.on("removedfile", function (file) {
+            imageId = file.previewElement.childNodes[3].id;
 
-            imageId = file.previewTemplate['childNodes']['3']['id'];
-
-            $.ajax({
-                url: '/images-delete',
-                data: {id: imageId},
-                method: 'POST',
-                dataType: 'json',
-                success: function (data) {
-                    alert('Imagem removida com sucesso!');
-                }
-            });
+            if(imageId!=='image-id'){
+                $.ajax({
+                    url: '/images-delete',
+                    data: {id: imageId},
+                    method: 'POST',
+                    dataType: 'json',
+                    success: function (data) {
+                        alert('Imagem removida com sucesso!');
+                    },
+                    error: function () {
+                        alert('Não foi possivel remover a imagem!');
+                    }
+                });
+            }
         });
-    },
 
-    error: function (file, message) {
-        console.log(message);
-        $(file.previewElement).addClass("dz-error").find('.dz-error-message').text(message.Message);
+        this.on("addedfiles", function (files) {
+            if (files.length > 1) {
+                alert('arrate apenas 1 arquivo por vez');
+                files.destroy(); // funcionamento não está correto
+            }
+        });
     },
 };

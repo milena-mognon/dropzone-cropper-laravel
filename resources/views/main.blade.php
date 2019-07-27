@@ -6,7 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Uploading images in Laravel with DropZone</title>
+    <title>Upload and Crop Images</title>
 
     <link rel="stylesheet" href="{{ url('/css/bootstrap.css') }}">
 
@@ -24,17 +24,17 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/') }}">Upload Images</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url('/images-show') }}">View Uploaded Files</a>
-            </li>
         </ul>
     </div>
 </nav>
 <div class="container-fluid">
-    @yield('content')
+    <div class="card col-lg-6 m-auto" >
+        <div class="card-body">
+            @yield('content')
+        </div>
+    </div>
+
 </div>
-
 @yield('js')
-
 </body>
 </html>

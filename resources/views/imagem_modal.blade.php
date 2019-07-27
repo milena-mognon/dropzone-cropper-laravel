@@ -18,7 +18,7 @@
                         </div>
                     </div>
                     <div class="fallback">
-                        <input type="file" name="file" multiple>
+                        <input type="file" name="file">
                     </div>
                 </form>
             </div>
